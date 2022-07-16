@@ -1,10 +1,10 @@
 {
-  "name": "FOMO",
+  "name": "FOMO MOFOS",
   "license": "UNLICENSED",
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ DontKillRobots/FOMO",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ daltoncoder/fomo-mofos",
     "create-local": "graph create --node http://localhost:8020/ DontKillRobots/FOMO",
     "remove-local": "graph remove --node http://localhost:8020/ DontKillRobots/FOMO",
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 DontKillRobots/FOMO"

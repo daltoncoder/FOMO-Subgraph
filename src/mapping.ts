@@ -1,92 +1,127 @@
-import { BigInt } from "@graphprotocol/graph-ts"
+import { BigInt,ipfs, json,log } from "@graphprotocol/graph-ts"
 import {
   Contract,
-  Approval,
-  ApprovalForAll,
   CreateItem,
-  OwnershipTransferred,
-  Paused,
   Transfer,
-  Unpaused
 } from "../generated/Contract/Contract"
-import { ExampleEntity } from "../generated/schema"
+import { NFT, Holder, Traits } from "../generated/schema"
 
-export function handleApproval(event: Approval): void {
-  // Entities can be loaded from the store using a string ID; this ID
-  // needs to be unique across all entities of the same type
-  let entity = ExampleEntity.load(event.transaction.from.toHex())
 
-  // Entities only exist after they have been saved to the store;
-  // `null` checks allow to create entities on demand
-  if (!entity) {
-    entity = new ExampleEntity(event.transaction.from.toHex())
+export function handleCreateItem(event: CreateItem): void {
+  let id = event.params.id
+  let contract = Contract.bind(event.address)
+  let nft = new NFT(id.toHexString())
+  nft.index = id.toI32()
+  
+  let owner = contract.ownerOf(id)
 
-    // Entity fields can be set using simple assignments
-    entity.count = BigInt.fromI32(0)
+  let holder = Holder.load(owner.toHexString())
+
+  if(!holder){
+   holder = new Holder(owner.toHexString())
+  }
+  nft.owner = owner.toHexString()
+
+  nft.image = "ipfs://QmTn3yDrwJgVS13eD5uhUKB4mxuQYDq78FihGa5W3YvCiV/" + id.toString() + ".png"
+
+ 
+
+  let metadata = ipfs.cat("Qme1vxGNw9Wuh7RM3y6p5VvQWzui1gyMb3RfLoWcst3M8n/" + id.toString());
+
+  if (metadata){
+    let value = json.fromBytes(metadata).toObject()
+    let attributes = value.get("attributes")
+    if (attributes){
+     let arr = attributes.toArray()
+
+      //dde
+      let traits = Traits.load(event.transaction.hash.toHexString())
+
+      if (!traits){
+        traits = new Traits(event.transaction.hash.toHexString())
+      }
+
+      for (let i = 0; i < arr.length; ++i){
+
+      let obj = arr[i].toObject()
+      let traitTypeJson = obj.get('trait_type')
+      let traitType = ""
+      if (traitTypeJson){
+         traitType = traitTypeJson.toString()
+      } 
+      
+      if (traitType == 'Background'){
+        let value = obj.get('value')
+        if(value){
+          traits.Background = value.toString()
+        }
+      }
+      if (traitType == 'Body'){
+        let value = obj.get('value')
+        if(value){
+          traits.Body = value.toString()
+        }
+      }
+      if (traitType == 'Skin'){
+        let value = obj.get('value')
+        if(value){
+          traits.Skin = value.toString()
+        }
+      }
+      if (traitType == 'Faces'){
+        let value = obj.get('value')
+        if(value){
+          traits.Faces = value.toString()
+        }
+      }
+      if (traitType == 'Headwear'){
+        let value = obj.get('value')
+        if(value){
+          traits.Headwear = value.toString()
+        }
+      }
+      if (traitType =='Piercing'){
+        let value = obj.get('value')
+        if(value){
+          traits.Piercing = value.toString()
+        }
+      }
+      if (traitType == 'Fomies'){
+        let value = obj.get('value')
+        if(value){
+          traits.Fomies = value.toString()
+        }
+      }
+      if (traitType == 'Sparkles'){
+        let value = obj.get('value')
+        if(value){
+          traits.Sparkles = value.toString()
+        }
+      }
+    }
+      traits.save()
+  }
   }
 
-  // BigInt and BigDecimal math are supported
-  entity.count = entity.count + BigInt.fromI32(1)
+  nft.traits = event.transaction.hash.toHexString()
 
-  // Entity fields can be set based on event parameters
-  entity.owner = event.params.owner
-  entity.approved = event.params.approved
+  holder.save()
+  nft.save()
 
-  // Entities can be written to the store with `.save()`
-  entity.save()
-
-  // Note: If a handler doesn't require existing field values, it is faster
-  // _not_ to load the entity from the store. Instead, create it fresh with
-  // `new Entity(...)`, set the fields that should be updated and save the
-  // entity back to the store. Fields that were not set or unset remain
-  // unchanged, allowing for partial updates to be applied.
-
-  // It is also possible to access smart contracts from mappings. For
-  // example, the contract that has emitted the event can be connected to
-  // with:
-  //
-  // let contract = Contract.bind(event.address)
-  //
-  // The following functions can then be called on this contract to access
-  // state variables and other data:
-  //
-  // - contract.MAX_BY_MINT(...)
-  // - contract.MAX_ELEMENTS(...)
-  // - contract.PRESALE_ELEMENTS(...)
-  // - contract.PRICE(...)
-  // - contract.balanceOf(...)
-  // - contract.baseTokenURI(...)
-  // - contract.canMintAmount(...)
-  // - contract.getApproved(...)
-  // - contract.isApprovedForAll(...)
-  // - contract.name(...)
-  // - contract.owner(...)
-  // - contract.ownerOf(...)
-  // - contract.paused(...)
-  // - contract.publicSaleOpen(...)
-  // - contract.supportsInterface(...)
-  // - contract.symbol(...)
-  // - contract.tierOneMaxMint(...)
-  // - contract.tierOneMerkleRoot(...)
-  // - contract.tierThreeMaxMint(...)
-  // - contract.tierThreeMerkleRoot(...)
-  // - contract.tierTwoMaxMint(...)
-  // - contract.tierTwoMerkleRoot(...)
-  // - contract.tokenURI(...)
-  // - contract.totalSupply(...)
-  // - contract.verifySender(...)
-  // - contract.whitelistClaimed(...)
-  // - contract.withdrawAddress(...)
 }
 
-export function handleApprovalForAll(event: ApprovalForAll): void {}
 
-export function handleCreateItem(event: CreateItem): void {}
+export function handleTransfer(event: Transfer): void {
+  let newOwner = event.params.to
+  let token = event.params.tokenId
 
-export function handleOwnershipTransferred(event: OwnershipTransferred): void {}
+  let nft = NFT.load(token.toHexString())
 
-export function handlePaused(event: Paused): void {}
+  if(nft){
+  nft.owner = newOwner.toHexString()
+  
+  nft.save()
+  }
 
-export function handleTransfer(event: Transfer): void {}
+}
 
-export function handleUnpaused(event: Unpaused): void {}

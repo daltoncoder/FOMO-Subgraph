@@ -1,6 +1,23 @@
-type ExampleEntity @entity {
-  id: ID!
-  count: BigInt!
-  owner: Bytes! # address
-  approved: Bytes! # address
+type NFT @entity {
+  id: ID! #transaction hash
+  index: Int!
+  owner: Holder!
+  traits: Traits!
+  image: String!
+}
+type Traits @entity {
+  id: ID! #transaction hash
+  Background: String
+  Body: String
+  Skin: String
+  Faces: String
+  Headwear: String
+  Piercing: String
+  Fomies: String
+  Sparkles: String
+}
+
+type Holder @entity {
+  id: ID! #address
+  tokens: [NFT!] @derivedFrom(field: "owner")
 }

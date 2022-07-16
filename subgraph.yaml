@@ -1,4 +1,4 @@
-specVersion: 0.0.1
+specVersion: 0.0.2
 schema:
   file: ./schema.graphql
 dataSources:
@@ -6,36 +6,22 @@ dataSources:
     name: Contract
     network: mainnet
     source:
-      address: "0x818A19A6D3f0859B68e8490a6E945a51060CAaD1"
+      address: '0x818A19A6D3f0859B68e8490a6E945a51060CAaD1'
       abi: Contract
+      startBlock: 14012451
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
-        - Approval
-        - ApprovalForAll
         - CreateItem
-        - OwnershipTransferred
-        - Paused
         - Transfer
-        - Unpaused
       abis:
         - name: Contract
           file: ./abis/Contract.json
       eventHandlers:
-        - event: Approval(indexed address,indexed address,indexed uint256)
-          handler: handleApproval
-        - event: ApprovalForAll(indexed address,indexed address,bool)
-          handler: handleApprovalForAll
         - event: CreateItem(indexed uint256)
           handler: handleCreateItem
-        - event: OwnershipTransferred(indexed address,indexed address)
-          handler: handleOwnershipTransferred
-        - event: Paused(address)
-          handler: handlePaused
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleTransfer
-        - event: Unpaused(address)
-          handler: handleUnpaused
       file: ./src/mapping.ts
