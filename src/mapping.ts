@@ -34,7 +34,7 @@ export function handleCreateItem(event: CreateItem): void {
     if (attributes){
      let arr = attributes.toArray()
 
-      //dde
+      
       let traits = Traits.load(event.transaction.hash.toHexString())
 
       if (!traits){
@@ -112,14 +112,23 @@ export function handleCreateItem(event: CreateItem): void {
 
 
 export function handleTransfer(event: Transfer): void {
-  let newOwner = event.params.to
   let token = event.params.tokenId
 
   let nft = NFT.load(token.toHexString())
 
   if(nft){
-  nft.owner = newOwner.toHexString()
+
+    let newOwner = Holder.load(event.params.to.toHexString())
+
+    if(!newOwner){
+      newOwner = new Holder(event.params.to.toHexString())
+    }
+
+  nft.owner = newOwner.id
   
+
+
+  newOwner.save()
   nft.save()
   }
 
